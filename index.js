@@ -19,6 +19,7 @@ const archiver = require('archiver');
 const admin = require('firebase-admin');
 const os = require('os');
 const url = require('url');
+const http = require('http');
 
 // Environment variables
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -55,6 +56,123 @@ const statsRef = db.ref('web2z/stats');
 
 // Initialize the bot with polling
 const bot = new TelegramBot(TOKEN, { polling: true });
+
+// Create a simple HTTP server on port 5000
+const server = http.createServer((req, res) => {
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.end(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Web2Z - Telegram Bot</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f5f5f5;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          color: #333;
+        }
+        .container {
+          background-color: white;
+          border-radius: 10px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          padding: 30px;
+          max-width: 600px;
+          width: 100%;
+          text-align: center;
+        }
+        h1 {
+          color: #0088cc;
+          margin-bottom: 20px;
+        }
+        .logo {
+          width: 100px;
+          height: 100px;
+          background-color: #0088cc;
+          border-radius: 50%;
+          margin: 0 auto 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: white;
+          font-size: 50px;
+        }
+        .features {
+          text-align: left;
+          margin: 30px 0;
+        }
+        .features li {
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+        }
+        .features li::before {
+          content: "✓";
+          color: #0088cc;
+          margin-right: 10px;
+          font-weight: bold;
+        }
+        .btn {
+          background-color: #0088cc;
+          color: white;
+          padding: 12px 24px;
+          border: none;
+          border-radius: 5px;
+          font-size: 16px;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-block;
+          margin-top: 20px;
+          transition: background-color 0.3s;
+        }
+        .btn:hover {
+          background-color: #006699;
+        }
+        .footer {
+          margin-top: 30px;
+          font-size: 14px;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="logo">W</div>
+        <h1>Web2Z Bot</h1>
+        <p>A powerful Telegram bot that scrapes websites and provides the complete source code as a ZIP file.</p>
+        
+        <div class="features">
+          <ul>
+            <li>Scrape any website with a single command</li>
+            <li>Get all HTML, CSS, JavaScript and image files</li>
+            <li>Receive the entire website packaged as a ZIP file</li>
+            <li>Simple and intuitive interface with beautiful graphics</li>
+            <li>Firebase integration for user tracking</li>
+            <li>Admin panel with broadcast and statistics</li>
+          </ul>
+        </div>
+        
+        <a href="https://t.me/your_bot_username" class="btn">Open Bot in Telegram</a>
+        
+        <div class="footer">
+          <p>Web2Z Bot is running on port 5000</p>
+          <p>Status: Online and Ready</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+// Start the HTTP server
+server.listen(5000, '0.0.0.0', () => {
+  console.log('🌐 Web server running on port 5000');
+});
 
 // Set up temp directory for downloads
 const tempDir = path.join(os.tmpdir(), 'web2z-downloads');
@@ -991,8 +1109,7 @@ async function fetchAndSendStats(chatId, messageId = null) {
     const activeUsers = Array.from(usersSnapshot.val() || {}).filter(([_, user]) => 
       user.lastActive && user.lastActive > oneWeekAgo
     ).length;
-    
-    // Prepare stats message
+        // Prepare stats message
     const statsMessage = 
       `📊 <b>Bot Statistics</b>\n\n` +
       `👥 <b>Users:</b>\n` +
@@ -1308,3 +1425,4 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // Keep the bot running despite errors
 });
+        
